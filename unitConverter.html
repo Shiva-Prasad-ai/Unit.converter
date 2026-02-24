@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Professional Unit Converter</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI, sans-serif;
+    background:linear-gradient(to right,#e3f2fd,#f4f9ff);
+}
+
+.navbar{
+    background:#0d47a1;
+    color:white;
+    padding:15px;
+    display:flex;
+    align-items:center;
+}
+
+.menu-icon{
+    width:30px;
+    cursor:pointer;
+}
+
+.menu-icon div{
+    height:4px;
+    background:white;
+    margin:5px 0;
+}
+
+.sidebar{
+    position:fixed;
+    left:-260px;
+    top:0;
+    width:240px;
+    height:100%;
+    background:#1565c0;
+    padding-top:20px;
+    transition:0.3s;
+    z-index:1000;
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    padding:15px;
+    text-decoration:none;
+}
+
+.sidebar a:hover{
+    background:#1e88e5;
+}
+
+.close-btn{
+    text-align:right;
+    padding:10px 15px;
+    font-size:22px;
+    cursor:pointer;
+    color:white;
+}
+
+.active{
+    left:0;
+}
+
+.container{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:85vh;
+}
+
+.card{
+    background:white;
+    padding:40px;
+    width:420px;
+    border-radius:12px;
+    box-shadow:0 8px 25px rgba(0,0,0,0.15);
+    text-align:center;
+}
+
+.card h2{
+    margin-bottom:25px;
+    color:#0d47a1;
+}
+
+select,input{
+    width:100%;
+    padding:10px;
+    margin-bottom:15px;
+    border:1px solid #90caf9;
+    border-radius:6px;
+    font-size:15px;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{
+    -webkit-appearance:none;
+    margin:0;
+}
+
+input[type=number]{
+    -moz-appearance:textfield;
+}
+
+select:focus,input:focus{
+    outline:none;
+    border:2px solid #1565c0;
+}
+
+.output-box{
+    margin-top:20px;
+    padding:15px;
+    border:2px solid #1565c0;
+    border-radius:8px;
+    background:#e3f2fd;
+    font-size:20px;
+    font-weight:bold;
+    color:#0d47a1;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="menu-icon" onclick="toggleMenu(event)">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <div style="margin-left:15px;">Unit Converter</div>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <div class="close-btn" onclick="closeMenu()">×</div>
+    <a href="#" onclick="changeCategory('weight')">Weight</a>
+    <a href="#" onclick="changeCategory('length')">Length</a>
+    <a href="#" onclick="changeCategory('temperature')">Temperature</a>
+    <a href="#" onclick="changeCategory('area')">Area</a>
+    <a href="#" onclick="changeCategory('volume')">Volume</a>
+    <a href="#" onclick="changeCategory('time')">Time</a>
+</div>
+
+<div class="container" onclick="closeMenu()">
+    <div class="card" onclick="event.stopPropagation()">
+        <h2 id="categoryTitle">Weight Converter</h2>
+
+        <select id="fromUnit" onchange="convert()"></select>
+        <select id="toUnit" onchange="convert()"></select>
+
+        <input type="number" id="inputValue" placeholder="Enter value" oninput="convert()">
+
+        <div class="output-box" id="outputValue">Result:</div>
+    </div>
+</div>
+
+<script>
+
+const conversions = {
+
+weight:{
+base:"kg",
+units:{
+kg:{value:1,name:"Kilogram"},
+g:{value:0.001,name:"Gram"},
+ton:{value:1000,name:"Metric Ton"},
+lb:{value:0.453592,name:"Pound"}
+}
+},
+
+length:{
+base:"m",
+units:{
+m:{value:1,name:"Meter"},
+km:{value:1000,name:"Kilometer"},
+cm:{value:0.01,name:"Centimeter"},
+inch:{value:0.0254,name:"Inch"},
+ft:{value:0.3048,name:"Foot"}
+}
+},
+
+area:{
+base:"sqm",
+units:{
+sqm:{value:1,name:"Square Meter"},
+sqft:{value:0.092903,name:"Square Foot"},
+acre:{value:4046.86,name:"Acre"},
+hectare:{value:10000,name:"Hectare"}
+}
+},
+
+volume:{
+base:"l",
+units:{
+l:{value:1,name:"Liter"},
+ml:{value:0.001,name:"Milliliter"},
+gallon:{value:3.78541,name:"Gallon"},
+cubicm:{value:1000,name:"Cubic Meter"}
+}
+},
+
+time:{
+base:"sec",
+units:{
+sec:{value:1,name:"Second"},
+min:{value:60,name:"Minute"},
+hr:{value:3600,name:"Hour"},
+day:{value:86400,name:"Day"}
+}
+}
+
+};
+
+function toggleMenu(e){
+e.stopPropagation();
+document.getElementById("sidebar").classList.toggle("active");
+}
+
+function closeMenu(){
+document.getElementById("sidebar").classList.remove("active");
+}
+
+function changeCategory(type){
+closeMenu();
+document.getElementById("categoryTitle").innerText=
+type.charAt(0).toUpperCase()+type.slice(1)+" Converter";
+
+let from=document.getElementById("fromUnit");
+let to=document.getElementById("toUnit");
+
+from.innerHTML="";
+to.innerHTML="";
+
+if(type==="temperature"){
+["Celsius","Fahrenheit","Kelvin"].forEach(u=>{
+from.innerHTML+=`<option value="${u}">${u}</option>`;
+to.innerHTML+=`<option value="${u}">${u}</option>`;
+});
+}else{
+Object.entries(conversions[type].units).forEach(([key,obj])=>{
+from.innerHTML+=`<option value="${key}">${obj.name}</option>`;
+to.innerHTML+=`<option value="${key}">${obj.name}</option>`;
+});
+}
+
+convert();
+}
+
+function convert(){
+let val=parseFloat(document.getElementById("inputValue").value);
+let from=document.getElementById("fromUnit").value;
+let to=document.getElementById("toUnit").value;
+let output=document.getElementById("outputValue");
+let category=document.getElementById("categoryTitle").innerText.split(" ")[0].toLowerCase();
+
+if(isNaN(val)){output.innerText="Result:";return;}
+
+if(category==="temperature"){
+let result;
+
+if(from==="Celsius") result=val;
+if(from==="Fahrenheit") result=(val-32)*5/9;
+if(from==="Kelvin") result=val-273.15;
+
+if(to==="Celsius") result=result;
+if(to==="Fahrenheit") result=(result*9/5)+32;
+if(to==="Kelvin") result=result+273.15;
+
+output.innerText="Result: "+result.toFixed(6);
+return;
+}
+
+let base=val*conversions[category].units[from].value;
+let final=base/conversions[category].units[to].value;
+
+output.innerText="Result: "+final.toFixed(6);
+}
+
+changeCategory("weight");
+
+</script>
+
+</body>
+</html>
